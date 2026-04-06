@@ -4,7 +4,7 @@
 
 A Chrome extension for personal knowledge management. It started as an evolution of a Tab Manager extension and grew into a standalone project for capturing, organizing, and retrieving information scattered across multiple platforms (Google Docs, Gmail, Calendar, Proton Mail, Evernote, AI chat tools).
 
-The primary user is Steve Souza, building this for personal use first with potential for commercialization later.
+Built for personal use first with potential for commercialization later.
 
 ## Core Concepts
 
@@ -24,7 +24,7 @@ The primary user is Steve Souza, building this for personal use first with poten
 ### Tag System (Multi-dimensional, evolving toward DAG)
 Tags are categorized by prefix:
 - `project:*` - what you're working on (e.g., `project:ai-development`)
-- `person:*` - who it relates to (e.g., `person:cici`)
+- `person:*` - who it relates to (e.g., `person:family-member`)
 - `type:*` - content type (e.g., `type:tutorial`, `type:reference`)
 - `context:*` - when/where needed (e.g., `context:doctor-appointment`)
 - `status:*` - workflow state (e.g., `status:to-read`, `status:completed`)
@@ -169,7 +169,7 @@ Note: `<all_urls>` needed for highlights. Consider `activeTab` alternative for l
 
 ## Coding Preferences
 
-- Steve typically writes Java but this project is JavaScript/TypeScript (Chrome extension)
+- The developer typically writes Java but this project is JavaScript/TypeScript (Chrome extension)
 - Prefer clear, readable code over clever abstractions
 - Start simple, evolve when complexity is justified
 - Document decisions and rationale

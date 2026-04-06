@@ -24,7 +24,7 @@ Tags are categorized by prefix to enable powerful multi-dimensional filtering:
 | Prefix | Purpose | Examples |
 |--------|---------|---------|
 | `project:*` | What you're working on | `project:ai-development`, `project:sidewalk-science` |
-| `person:*` | Who it relates to | `person:cici`, `person:mindy` |
+| `person:*` | Who it relates to | `person:family-member`, `person:spouse` |
 | `type:*` | Content type | `type:tutorial`, `type:article`, `type:ai-conversation` |
 | `context:*` | When/where needed | `context:doctor-appointment`, `context:school` |
 | `status:*` | Workflow state | `status:to-read`, `status:completed`, `status:unused` |
@@ -63,8 +63,8 @@ Interactive UI prototypes are in [`resources/prototype/`](resources/prototype/).
 ThoughtBox/
 ├── CLAUDE.md                  # Project spec and AI assistant instructions
 ├── resources/
-│   ├── ThoughtBox.pdf         # Requirements document v1.0
-│   ├── ThoughtBox Claude.pdf  # Brainstorming and design session transcript
+│   ├── requirements.md        # User requirements document v1.0
+│   ├── design-decisions.md    # Architecture decisions and rationale
 │   └── prototype/             # Interactive HTML prototypes
 │       ├── index.html         # Prototype index page
 │       └── v1-dashboard.html  # Full dashboard prototype
@@ -72,5 +72,5 @@ ThoughtBox/
 
 ## References
 
-- [Requirements Document](resources/ThoughtBox.pdf) — Full user requirements (v1.0)
-- [Design Session](resources/ThoughtBox%20Claude.pdf) — Brainstorming transcript with architecture decisions
+- [Requirements Document](resources/requirements.md) — Full user requirements (v1.0)
+- [Design Decisions](resources/design-decisions.md) — Architecture decisions and rationale
