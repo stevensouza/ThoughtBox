@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThoughtBox</title>
+    <style>
+        /* ===== RESET & TOKENS ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f8f9fb;
+            --surface: #ffffff;
+            --surface-hover: #f3f4f6;
+            --surface-active: #eff6ff;
+            --border: #e5e7eb;
+            --border-light: #f0f0f0;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-light: #eff6ff;
+            --accent-border: #bfdbfe;
+            --green: #059669;
+            --green-bg: #ecfdf5;
+            --amber: #d97706;
+            --amber-bg: #fffbeb;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --purple: #7c3aed;
+            --purple-bg: #f5f3ff;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+            --sidebar-w: 260px;
+            --topbar-h: 56px;
+            --transition: 0.15s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        button { font: inherit; cursor: pointer; border: none; background: none; }
+        input, textarea, select { font: inherit; }
+
+        /* ===== LAYOUT SHELL ===== */
+        .app {
+            display: grid;
+            grid-template-columns: var(--sidebar-w) 1fr;
+            grid-template-rows: var(--topbar-h) 1fr;
+            height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            grid-column: 1 / -1;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+            z-index: 20;
+        }
+
+        .topbar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .topbar-brand svg { flex-shrink: 0; }
+
+        .topbar-nav {
+            display: flex;
+            gap: 2px;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .topbar-nav button {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition);
+        }
+
+        .topbar-nav button:hover { color: var(--text-primary); background: var(--surface); }
+        .topbar-nav button.active { color: var(--text-primary); background: var(--surface); box-shadow: var(--shadow-sm); }
+
+        .topbar-search {
+            flex: 1;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .topbar-search input {
+            width: 100%;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0 12px 0 36px;
+            font-size: 13px;
+            background: var(--bg);
+            color: var(--text-primary);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .topbar-search input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+            background: var(--surface);
+        }
+
+        .topbar-search input::placeholder { color: var(--text-tertiary); }
+
+        .topbar-search svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-ghost {
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            transition: all var(--transition);
+        }
+
+        .btn-icon:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .sidebar-section { margin-bottom: 8px; }
+
+        .sidebar-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sidebar-heading:hover { color: var(--text-secondary); }
+
+        .sidebar-heading svg {
+            transition: transform var(--transition);
+        }
+
+        .sidebar-heading.collapsed svg {
+            transform: rotate(-90deg);
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 16px 7px 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            border-radius: 0;
+        }
+
+        .sidebar-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .sidebar-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+        .sidebar-item .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-item .count {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            background: var(--bg);
+            padding: 1px 7px;
+            border-radius: 100px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border-light);
+            margin: 12px 16px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* -- View container -- */
+        .view { display: none; flex: 1; flex-direction: column; }
+        .view.active { display: flex; }
+
+        /* ===== LIBRARY VIEW ===== */
+        .library-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        .library-toolbar-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .library-toolbar .item-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .library-toolbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-chip.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+        .view-toggle {
+            display: flex;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .view-toggle button {
+            padding: 5px 10px;
+            color: var(--text-tertiary);
+            transition: all var(--transition);
+        }
+
+        .view-toggle button:hover { color: var(--text-primary); }
+        .view-toggle button.active { background: var(--accent-light); color: var(--accent); }
+
+        /* -- Item List -- */
+        .item-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 16px;
+        }
+
+        .item-card {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 16px;
+            padding: 14px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background var(--transition);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .item-card:last-child { border-bottom: none; }
+        .item-card:hover { background: var(--surface-hover); }
+        .item-card.selected { background: var(--accent-light); }
+
+        .item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-url {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            grid-column: 1;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-align: right;
+            grid-row: 1;
+            grid-column: 2;
+            white-space: nowrap;
+        }
+
+        .item-tags {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 500;
+        }
+
+        .tag-project  { background: #dbeafe; color: #1e40af; }
+        .tag-person   { background: #fce7f3; color: #9d174d; }
+        .tag-type     { background: #e0e7ff; color: #4338ca; }
+        .tag-context  { background: #d1fae5; color: #065f46; }
+        .tag-status   { background: #fef3c7; color: #92400e; }
+        .tag-source   { background: #f3e8ff; color: #6b21a8; }
+
+        .item-note-preview {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .unread-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        /* ===== DETAIL PANEL ===== */
+        .detail-panel {
+            display: none;
+            width: 420px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .detail-panel.open { display: block; }
+
+        .detail-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 12px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 6px;
+        }
+
+        .detail-url {
+            font-size: 13px;
+            color: var(--accent);
+            word-break: break-all;
+        }
+
+        .detail-notes {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 12px;
+        }
+
+        .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .detail-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail-meta-item {
+            font-size: 12px;
+        }
+
+        .detail-meta-item .label {
+            color: var(--text-tertiary);
+            font-size: 11px;
+        }
+
+        .detail-meta-item .value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* -- Highlights within detail -- */
+        .highlight-card {
+            background: var(--bg);
+            border-left: 3px solid var(--amber);
+            padding: 10px 12px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin-bottom: 8px;
+        }
+
+        .highlight-text {
+            font-size: 13px;
+            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .highlight-note {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ===== LIBRARY VIEW WRAPPER ===== */
+        .library-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .library-wrapper .item-list { flex: 1; }
+
+        /* ===== CAPTURE MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 520px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 28px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            color: var(--text-primary);
+            background: var(--bg);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+            background: var(--surface);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .ai-suggestions {
+            background: var(--purple-bg);
+            border-radius: var(--radius);
+            padding: 12px;
+        }
+
+        .ai-suggestions-header {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--purple);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-suggestion-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: var(--surface);
+            color: var(--text-primary);
+            margin-right: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all var(--transition);
+        }
+
+        .ai-suggestion-tag:hover { border-color: var(--accent); }
+        .ai-suggestion-tag .confidence { font-size: 10px; color: var(--text-tertiary); }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--surface);
+            transition: all var(--transition);
+        }
+
+        .btn-secondary:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+        /* ===== TAG MANAGER VIEW ===== */
+        .tag-manager {
+            padding: 24px;
+            max-width: 900px;
+        }
+
+        .tag-manager-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .tag-manager-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .tag-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tag-table th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tag-table td {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        .tag-table tr:hover { background: var(--surface-hover); }
+
+        .tag-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag-color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .tag-id-text {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+        }
+
+        .tag-parent {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .tag-bar {
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+            width: 80px;
+        }
+
+        .tag-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        /* ===== DAILY BRIEF VIEW ===== */
+        .daily-brief {
+            padding: 32px 24px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .brief-header {
+            margin-bottom: 32px;
+        }
+
+        .brief-date {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-bottom: 4px;
+        }
+
+        .brief-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .brief-section {
+            margin-bottom: 28px;
+        }
+
+        .brief-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .brief-section-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .brief-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .brief-item strong { color: var(--text-primary); font-weight: 500; }
+
+        .brief-bullet {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            flex-shrink: 0;
+            margin-top: 7px;
+        }
+
+        .brief-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            min-width: 70px;
+        }
+
+        .brief-suggestion {
+            background: var(--accent-light);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        /* ===== UTILITY ===== */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- ===== TOP BAR ===== -->
+    <header class="topbar">
+        <div class="topbar-brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+            ThoughtBox
+        </div>
+
+        <nav class="topbar-nav">
+            <button class="active" data-view="library">Library</button>
+            <button data-view="tags">Tags</button>
+            <button data-view="brief">Daily Brief</button>
+        </nav>
+
+        <div class="topbar-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input type="text" placeholder="Search items, tags, or ask a question..." />
+        </div>
+
+        <div class="topbar-actions">
+            <button class="btn btn-primary" id="captureBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Capture
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <!-- Smart Collections -->
+        <div class="sidebar-section">
+            <div class="sidebar-heading" data-collapse="smart">
+                Smart Collections
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="sidebar-items" data-section="smart">
+                <div class="sidebar-item active">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                    All Items
+                    <span class="count">156</span>
+                </div>
+                <div class="sidebar-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    Unread
+                    <span class="count">23</span>
+                </div>
+                <div class="sidebar-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Recent
+                    <span class="count">12</span>
+                </div>
+                <div class="sidebar-item">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                    Untagged
+                    <span class="count">5</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Projects -->
+        <div class="sidebar-section">
+            <div class="sidebar-heading" data-collapse="projects">
+                Projects
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="sidebar-items" data-section="projects">
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #3b82f6"></span>
+                    AI Development
+                    <span class="count">47</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #10b981"></span>
+                    Sidewalk Science
+                    <span class="count">31</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #f59e0b"></span>
+                    Family Activities
+                    <span class="count">24</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #8b5cf6"></span>
+                    ThoughtBox
+                    <span class="count">18</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #ec4899"></span>
+                    Music Projects
+                    <span class="count">12</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- People -->
+        <div class="sidebar-section">
+            <div class="sidebar-heading" data-collapse="people">
+                People
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="sidebar-items" data-section="people">
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #f472b6"></span>
+                    Cici
+                    <span class="count">15</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: #fb923c"></span>
+                    Mindy
+                    <span class="count">8</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Status -->
+        <div class="sidebar-section">
+            <div class="sidebar-heading" data-collapse="status">
+                Status
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            <div class="sidebar-items" data-section="status">
+                <div class="sidebar-item">
+                    <span class="dot" style="background: var(--amber)"></span>
+                    To Read
+                    <span class="count">15</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: var(--accent)"></span>
+                    In Progress
+                    <span class="count">7</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="dot" style="background: var(--green)"></span>
+                    Completed
+                    <span class="count">89</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main">
+
+        <!-- LIBRARY VIEW -->
+        <div class="view active" id="view-library">
+            <div class="library-toolbar">
+                <span class="library-toolbar-title">All Items</span>
+                <span class="item-count">156 items</span>
+                <div class="library-toolbar-right">
+                    <span class="filter-chip active">All</span>
+                    <span class="filter-chip">Webpages</span>
+                    <span class="filter-chip">AI Chats</span>
+                    <span class="filter-chip">Emails</span>
+                    <span class="filter-chip">Calendar</span>
+                    <div class="view-toggle">
+                        <button class="active" title="List view">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        </button>
+                        <button title="Grid view">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="library-wrapper">
+                <div class="item-list">
+                    <!-- Item 1 -->
+                    <div class="item-card selected" data-item="1">
+                        <div class="item-title"><span class="unread-dot"></span>Building AI Agents with Claude - Best Practices Guide</div>
+                        <div class="item-meta">2 hours ago</div>
+                        <div class="item-url">anthropic.com/docs/agents-guide</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:ai-development</span>
+                            <span class="tag-pill tag-type">type:tutorial</span>
+                            <span class="tag-pill tag-source">source:anthropic</span>
+                        </div>
+                        <div class="item-note-preview">Comprehensive guide covering agent architecture, tool use patterns, and error handling strategies. Key takeaway: keep agent loops tight and deterministic.</div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="item-card" data-item="2">
+                        <div class="item-title"><span class="unread-dot"></span>Why Monarch Butterflies Are Disappearing</div>
+                        <div class="item-meta">Yesterday</div>
+                        <div class="item-url">nationalgeographic.com/animals/monarch-butterflies</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:sidewalk-science</span>
+                            <span class="tag-pill tag-type">type:article</span>
+                            <span class="tag-pill tag-status">status:unused</span>
+                        </div>
+                        <div class="item-note-preview">Great fact for sidewalk chalk: Monarchs travel up to 3,000 miles during migration. Their wings beat 5-12 times per second.</div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="item-card" data-item="3">
+                        <div class="item-title">Mt. Lebanon Youth Hockey Registration - Spring 2026</div>
+                        <div class="item-meta">Yesterday</div>
+                        <div class="item-url">mtlebanon.org/recreation/hockey</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:family-activities</span>
+                            <span class="tag-pill tag-person">person:cici</span>
+                            <span class="tag-pill tag-context">context:sports</span>
+                        </div>
+                        <div class="item-note-preview">Registration opens April 15. Ages 8-12 division. Tuesday/Thursday evenings. $285 for the season includes equipment rental.</div>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="item-card" data-item="4">
+                        <div class="item-title">Claude API: Streaming vs Batch Processing Comparison</div>
+                        <div class="item-meta">2 days ago</div>
+                        <div class="item-url">claude.ai/chat/a3b2c1d4</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:ai-development</span>
+                            <span class="tag-pill tag-type">type:ai-conversation</span>
+                            <span class="tag-pill tag-source">source:claude</span>
+                        </div>
+                        <div class="item-note-preview">Asked Claude about trade-offs between streaming and batch. Streaming better for UX, batch better for throughput. Good code examples saved.</div>
+                    </div>
+
+                    <!-- Item 5 -->
+                    <div class="item-card" data-item="5">
+                        <div class="item-title">Delta Dental Network Change Notice</div>
+                        <div class="item-meta">3 days ago</div>
+                        <div class="item-url">mail.google.com/mail/u/0/#inbox/19abc</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-type">type:email</span>
+                            <span class="tag-pill tag-context">context:doctor-appointment</span>
+                            <span class="tag-pill tag-status">status:to-read</span>
+                        </div>
+                        <div class="item-note-preview">Network change affects Lanz Dentistry. Need to check if still in-network after July 1. Call office to confirm.</div>
+                    </div>
+
+                    <!-- Item 6 -->
+                    <div class="item-card" data-item="6">
+                        <div class="item-title">How Volcanoes Create New Islands - Geology Explainer</div>
+                        <div class="item-meta">3 days ago</div>
+                        <div class="item-url">sciencenews.org/article/volcanic-island-formation</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:sidewalk-science</span>
+                            <span class="tag-pill tag-type">type:article</span>
+                            <span class="tag-pill tag-status">status:sidewalk-used</span>
+                        </div>
+                        <div class="item-note-preview">Used for last week's sidewalk chalk. Surtsey island formed in 1963 off Iceland coast. Kids loved the "island born from the ocean" angle.</div>
+                    </div>
+
+                    <!-- Item 7 -->
+                    <div class="item-card" data-item="7">
+                        <div class="item-title">Cici's Spring Musical Schedule - School Calendar</div>
+                        <div class="item-meta">4 days ago</div>
+                        <div class="item-url">mtlsd.org/calendar/spring-musical-2026</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-person">person:cici</span>
+                            <span class="tag-pill tag-project">project:family-activities</span>
+                            <span class="tag-pill tag-context">context:school</span>
+                        </div>
+                        <div class="item-note-preview">Rehearsals Mon/Wed 3:30-5:00. Performance dates: May 8-9. Parent volunteer signup through PTA email.</div>
+                    </div>
+
+                    <!-- Item 8 -->
+                    <div class="item-card" data-item="8">
+                        <div class="item-title">IndexedDB Performance Tips for Large Datasets</div>
+                        <div class="item-meta">5 days ago</div>
+                        <div class="item-url">web.dev/indexeddb-best-practices</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:thoughtbox</span>
+                            <span class="tag-pill tag-type">type:reference</span>
+                            <span class="tag-pill tag-source">source:web</span>
+                        </div>
+                        <div class="item-note-preview">Key insight: use compound indexes for tag + date queries. Cursor-based pagination is critical over 10k records. Dexie.js handles this well.</div>
+                    </div>
+
+                    <!-- Item 9 -->
+                    <div class="item-card" data-item="9">
+                        <div class="item-title">Suno AI Music Generation - Advanced Prompt Techniques</div>
+                        <div class="item-meta">1 week ago</div>
+                        <div class="item-url">reddit.com/r/SunoAI/comments/advanced-prompts</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:music-projects</span>
+                            <span class="tag-pill tag-type">type:tutorial</span>
+                            <span class="tag-pill tag-status">status:to-read</span>
+                        </div>
+                        <div class="item-note-preview">Community-compiled prompt engineering tips for Suno v4. Genre blending, tempo control, and lyric formatting best practices.</div>
+                    </div>
+
+                    <!-- Item 10 -->
+                    <div class="item-card" data-item="10">
+                        <div class="item-title">Octopuses Have Three Hearts - Marine Biology Facts</div>
+                        <div class="item-meta">1 week ago</div>
+                        <div class="item-url">oceanexplorer.noaa.gov/facts/octopus</div>
+                        <div class="item-tags">
+                            <span class="tag-pill tag-project">project:sidewalk-science</span>
+                            <span class="tag-pill tag-type">type:article</span>
+                            <span class="tag-pill tag-status">status:unused</span>
+                        </div>
+                        <div class="item-note-preview">Three hearts, blue blood, and they can change color in milliseconds. Also: they can taste with their arms. Perfect sidewalk material.</div>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="detail-panel open" id="detailPanel">
+                    <div class="detail-header">
+                        <h2 class="detail-title">Building AI Agents with Claude - Best Practices Guide</h2>
+                        <button class="btn-icon" id="closeDetail" title="Close panel">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-label">URL</div>
+                        <div class="detail-url">https://anthropic.com/docs/agents-guide</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-label">Notes</div>
+                        <div class="detail-notes">
+                            Comprehensive guide covering agent architecture, tool use patterns, and error handling strategies. Key takeaway: keep agent loops tight and deterministic.
+                            <br><br>
+                            Important sections to revisit:
+                            <br>- Section 3: Tool orchestration patterns
+                            <br>- Section 5: Error recovery and retry logic
+                            <br>- Section 7: Testing agents in production
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-label">Tags</div>
+                        <div class="detail-tags">
+                            <span class="tag-pill tag-project">project:ai-development</span>
+                            <span class="tag-pill tag-type">type:tutorial</span>
+                            <span class="tag-pill tag-source">source:anthropic</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-label">Highlights</div>
+                        <div class="highlight-card">
+                            <div class="highlight-text">"The most effective agents use a tight loop: observe the current state, decide the next action, execute it, and verify the result before proceeding."</div>
+                            <div class="highlight-note">Core pattern for ThoughtBox's future AI features</div>
+                        </div>
+                        <div class="highlight-card">
+                            <div class="highlight-text">"Tool use should be deterministic where possible. Non-deterministic tool calls make debugging exponentially harder."</div>
+                            <div class="highlight-note">Good principle for the capture workflow</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-label">Metadata</div>
+                        <div class="detail-meta-grid">
+                            <div class="detail-meta-item">
+                                <div class="label">Captured</div>
+                                <div class="value">Apr 6, 2026 10:15 AM</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="label">Last Accessed</div>
+                                <div class="value">Apr 6, 2026 2:30 PM</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="label">Source</div>
+                                <div class="value">Chrome Tab</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="label">Status</div>
+                                <div class="value">Unread</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="label">Reading Time</div>
+                                <div class="value">12 min</div>
+                            </div>
+                            <div class="detail-meta-item">
+                                <div class="label">Access Count</div>
+                                <div class="value">3</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAG MANAGER VIEW -->
+        <div class="view" id="view-tags">
+            <div class="tag-manager">
+                <div class="tag-manager-header">
+                    <h2>Tag Manager</h2>
+                    <button class="btn btn-primary">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        New Tag
+                    </button>
+                </div>
+                <table class="tag-table">
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>ID</th>
+                            <th>Parent</th>
+                            <th>Items</th>
+                            <th>Usage</th>
+                            <th>Last Used</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #3b82f6"></span>
+                                    AI Development
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">project:ai-development</span></td>
+                            <td><span class="tag-parent">project:ai</span></td>
+                            <td>47</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 85%; background: #3b82f6"></div></div>
+                            </td>
+                            <td>2 hours ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #10b981"></span>
+                                    Sidewalk Science
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">project:sidewalk-science</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>31</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 60%; background: #10b981"></div></div>
+                            </td>
+                            <td>Yesterday</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #f59e0b"></span>
+                                    Family Activities
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">project:family-activities</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>24</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 45%; background: #f59e0b"></div></div>
+                            </td>
+                            <td>Yesterday</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #8b5cf6"></span>
+                                    ThoughtBox
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">project:thoughtbox</span></td>
+                            <td><span class="tag-parent">project:ai</span></td>
+                            <td>18</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 32%; background: #8b5cf6"></div></div>
+                            </td>
+                            <td>5 days ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #f472b6"></span>
+                                    Cici
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">person:cici</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>15</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 28%; background: #f472b6"></div></div>
+                            </td>
+                            <td>Yesterday</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #ec4899"></span>
+                                    Music Projects
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">project:music-projects</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>12</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 22%; background: #ec4899"></div></div>
+                            </td>
+                            <td>1 week ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #d97706"></span>
+                                    To Read
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">status:to-read</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>15</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 28%; background: #d97706"></div></div>
+                            </td>
+                            <td>3 days ago</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="tag-name-cell">
+                                    <span class="tag-color-dot" style="background: #6366f1"></span>
+                                    Tutorial
+                                </div>
+                            </td>
+                            <td><span class="tag-id-text">type:tutorial</span></td>
+                            <td><span class="tag-parent">--</span></td>
+                            <td>22</td>
+                            <td>
+                                <div class="tag-bar"><div class="tag-bar-fill" style="width: 40%; background: #6366f1"></div></div>
+                            </td>
+                            <td>2 hours ago</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DAILY BRIEF VIEW -->
+        <div class="view" id="view-brief">
+            <div class="daily-brief">
+                <div class="brief-header">
+                    <div class="brief-date">Sunday, April 6, 2026</div>
+                    <h1 class="brief-title">Your Daily Brief</h1>
+                </div>
+
+                <!-- Top Priority -->
+                <div class="brief-section">
+                    <div class="brief-section-header">
+                        <div class="brief-section-icon" style="background: var(--red-bg); color: var(--red);">!</div>
+                        Top Priority
+                    </div>
+                    <div class="brief-item">
+                        <div class="brief-bullet" style="background: var(--red);"></div>
+                        <div><strong>Hockey registration opens April 15</strong> &mdash; You saved 3 programs to compare. Mt. Lebanon, Upper St. Clair, and South Hills.</div>
+                    </div>
+                    <div class="brief-item">
+                        <div class="brief-bullet" style="background: var(--red);"></div>
+                        <div><strong>Check Delta Dental network change</strong> &mdash; Affects Lanz Dentistry after July 1. Call office this week.</div>
+                    </div>
+                </div>
+
+                <!-- Today's Calendar -->
+                <div class="brief-section">
+                    <div class="brief-section-header">
+                        <div class="brief-section-icon" style="background: var(--accent-light); color: var(--accent);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        </div>
+                        Today's Calendar
+                    </div>
+                    <div class="brief-item">
+                        <span class="brief-time">10:00 AM</span>
+                        <div><strong>Sidewalk chalk with Cici</strong> &mdash; You have 5 unused science facts ready</div>
+                    </div>
+                    <div class="brief-item">
+                        <span class="brief-time">2:00 PM</span>
+                        <div><strong>ThoughtBox development session</strong></div>
+                    </div>
+                    <div class="brief-item">
+                        <span class="brief-time">5:30 PM</span>
+                        <div><strong>Cici's acting class</strong> &mdash; Spring musical rehearsal schedule starts next week</div>
+                    </div>
+                </div>
+
+                <!-- Research Update -->
+                <div class="brief-section">
+                    <div class="brief-section-header">
+                        <div class="brief-section-icon" style="background: var(--green-bg); color: var(--green);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        </div>
+                        Research Update
+                    </div>
+                    <div class="brief-item">
+                        <div class="brief-bullet"></div>
+                        <div>You saved <strong>4 new items</strong> this week across 3 projects</div>
+                    </div>
+                    <div class="brief-item">
+                        <div class="brief-bullet"></div>
+                        <div><strong>Sidewalk Science:</strong> 5 unused facts (monarch butterflies, octopus hearts, bioluminescence, Saturn's rings, human DNA length)</div>
+                    </div>
+                    <div class="brief-item">
+                        <div class="brief-bullet"></div>
+                        <div><strong>15 items</strong> still marked "to-read" &mdash; oldest is 3 weeks old</div>
+                    </div>
+                </div>
+
+                <!-- AI Suggestions -->
+                <div class="brief-section">
+                    <div class="brief-section-header">
+                        <div class="brief-section-icon" style="background: var(--purple-bg); color: var(--purple);">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        </div>
+                        Suggestions
+                    </div>
+                    <div class="brief-suggestion">You captured 3 AI development articles this week but none are tagged by subtopic. Consider adding project:ai-coding or project:ai-agents tags.</div>
+                    <div class="brief-suggestion">The Suno AI music tutorial has been in "to-read" for 2 weeks. Still relevant?</div>
+                    <div class="brief-suggestion">You have 5 untagged items from last week. Would you like to review them?</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ===== CAPTURE MODAL ===== -->
+<div class="modal-overlay" id="captureModal">
+    <div class="modal">
+        <div class="modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Capture Page
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" type="text" value="Understanding WebGPU - The Future of Graphics on the Web" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">URL</label>
+            <input class="form-input" type="text" value="https://developer.chrome.com/blog/webgpu-cross-platform" readonly style="color: var(--text-tertiary);" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-input" rows="4" placeholder="Add your thoughts, key takeaways, or why this is useful..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Tags</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                <span class="tag-pill tag-project" style="cursor: pointer;">project:ai-development <span style="margin-left: 4px; opacity: 0.6;">x</span></span>
+                <span class="tag-pill tag-type" style="cursor: pointer;">type:article <span style="margin-left: 4px; opacity: 0.6;">x</span></span>
+            </div>
+            <input class="form-input" type="text" placeholder="Add a tag... (e.g. project:, type:, person:)" />
+        </div>
+
+        <div class="form-group">
+            <div class="ai-suggestions">
+                <div class="ai-suggestions-header">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    AI-Suggested Tags
+                </div>
+                <span class="ai-suggestion-tag">+ type:tutorial <span class="confidence">92%</span></span>
+                <span class="ai-suggestion-tag">+ project:thoughtbox <span class="confidence">78%</span></span>
+                <span class="ai-suggestion-tag">+ status:to-read <span class="confidence">71%</span></span>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-secondary" id="cancelCapture">Cancel</button>
+            <button class="btn-secondary">Save &amp; Close Tab</button>
+            <button class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === View switching (top nav) ===
+    document.querySelectorAll('.topbar-nav button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.topbar-nav button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const viewId = 'view-' + btn.dataset.view;
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        });
+    });
+
+    // === Sidebar collapse ===
+    document.querySelectorAll('.sidebar-heading').forEach(heading => {
+        heading.addEventListener('click', () => {
+            heading.classList.toggle('collapsed');
+            const section = heading.nextElementSibling;
+            if (section) {
+                section.style.display = heading.classList.contains('collapsed') ? 'none' : 'block';
+            }
+        });
+    });
+
+    // === Sidebar item selection ===
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+        });
+    });
+
+    // === Item card selection / detail panel ===
+    document.querySelectorAll('.item-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('detailPanel').classList.add('open');
+        });
+    });
+
+    document.getElementById('closeDetail').addEventListener('click', () => {
+        document.getElementById('detailPanel').classList.remove('open');
+        document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+    });
+
+    // === Capture modal ===
+    document.getElementById('captureBtn').addEventListener('click', () => {
+        document.getElementById('captureModal').classList.add('open');
+    });
+
+    document.getElementById('cancelCapture').addEventListener('click', () => {
+        document.getElementById('captureModal').classList.remove('open');
+    });
+
+    document.getElementById('captureModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            document.getElementById('captureModal').classList.remove('open');
+        }
+    });
+
+    // === Filter chips ===
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+        });
+    });
+
+    // === View toggles ===
+    document.querySelectorAll('.view-toggle button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
