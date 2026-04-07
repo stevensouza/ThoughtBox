@@ -199,6 +199,16 @@ Built-in virtual collections that require no manual setup:
 - `?` matches a single character (e.g., `project.bug??.backend`)
 - `**` matches across multiple levels (Phase 2+)
 
+### Tag Architecture Options
+
+Three architectural approaches for the tag system are being evaluated — see [Tag Architecture Options](tag_architecture_options.md) for the full analysis:
+
+- **Option A (Facets):** Prefixes are hard-coded facets; hierarchy only within facets
+- **Option B (Pure DAG):** All tags are equal nodes in a universal DAG; `kind` is just metadata
+- **Option C (Hybrid, recommended):** Tags are the universal primitive with an optional `kind` property that drives views but does not constrain the DAG
+
+The decision on which approach to adopt is pending.
+
 ### AI-Powered Tag Features (Phase 2+)
 
 - **Auto-suggestion** -- analyze URL, title, and notes to suggest 3-5 tags with confidence levels
@@ -441,6 +451,7 @@ These questions remain open and will be resolved as usage patterns emerge:
    - Maximum number of parents per tag (3-5?)
    - Maximum depth of hierarchy (5 levels?)
    - Cycle prevention algorithm needed for DAG structure
+   - See [Tag Architecture Options](tag_architecture_options.md) for deeper exploration of architectural approaches
 
 3. **Primary UI surface**
    - Popup (current, like Tab Manager)

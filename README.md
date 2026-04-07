@@ -65,6 +65,7 @@ ThoughtBox/
 ├── resources/
 │   ├── requirements.md        # User requirements document v1.0
 │   ├── design-decisions.md    # Architecture decisions and rationale
+│   ├── tag_architecture_options.md  # Tag architecture design options (Facets vs DAG vs Hybrid)
 │   └── prototype/             # Interactive HTML prototypes
 │       ├── index.html         # Prototype index page
 │       └── v1-dashboard.html  # Full dashboard prototype
@@ -74,3 +75,4 @@ ThoughtBox/
 
 - [Requirements Document](resources/requirements.md) — Full user requirements (v1.0)
 - [Design Decisions](resources/design-decisions.md) — Architecture decisions and rationale
+- [Tag Architecture Options](resources/tag_architecture_options.md) — Three design options for the tag system (Facets, Pure DAG, Hybrid)
